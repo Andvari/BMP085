@@ -43,13 +43,13 @@ class BMP085{
 public:
 	BMP085(void);
 
-	void begin(uint8_t, int8_t, int8_t);			// oss, eoc, xclr
-	void	reset(void);
-	int32_t	getTemperature(void);
-	int32_t	getPressure(void);
+	void		begin(uint8_t, int8_t, int8_t);			// oss, eoc, xclr
+	void		reset(void);
+	int32_t		getTemperature(void);
+	int32_t		getPressure(void);
 
 private:
-	void	getReg(int16_t *,  const uint8_t);
+	void		getReg(int16_t *,  const uint8_t);
 
 	uint8_t		base;
 
@@ -68,11 +68,11 @@ private:
 	int16_t		MD;
 	int32_t		B5_;
 
-	uint8_t oss;
-	uint8_t	conversion_delay;
+	uint8_t 	oss;
+	uint8_t		conversion_delay;
 
-	int8_t	pin_xclr;
-	int8_t	pin_eoc;
+	int8_t		pin_xclr;
+	int8_t		pin_eoc;
 };
 
 #endif /* BMP085_H_ */

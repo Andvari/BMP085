@@ -65,13 +65,15 @@ int32_t BMP085 :: getTemperature(void){
     Wire.write(0xF4);
     Wire.write(0x2E);
     Wire.endTransmission(false);
+    delay(5);
+/*
     if(pin_eoc == -1){
     	delay(5);
     }
     else{
     	while(digitalRead(pin_eoc) == 0);
     }
-
+*/
     Wire.beginTransmission(base);
     Wire.write(0xF6);
     Wire.endTransmission(false);
@@ -80,7 +82,7 @@ int32_t BMP085 :: getTemperature(void){
     LSB = Wire.read();
     Wire.endTransmission(true);
 
-    UT = MSB << 8 ;
+    UT = MSB << 8;
     UT += LSB;
     X1  = (UT - AC6)*AC5/32768l;
     X2  = MC * 2048l / (X1 + MD);
@@ -116,14 +118,17 @@ int32_t BMP085 :: getPressure(void){
     Wire.write(0xF4);
     Wire.write(0x34 + (oss << 6));
     Wire.endTransmission(false);
+
+    delay(conversion_delay);
+/*
     if(pin_eoc == -1){
         delay(conversion_delay);
     }
     else{
     	while(digitalRead(pin_eoc) == 0);
     }
-
-    Wire.beginTransmission(0x77);
+*/
+    Wire.beginTransmission(base);
     Wire.write(0xF6);
     Wire.endTransmission(false);
     Wire.requestFrom(0x77, 2, false);
@@ -131,7 +136,7 @@ int32_t BMP085 :: getPressure(void){
     LSB = Wire.read();
     Wire.endTransmission(true);
 
-    Wire.beginTransmission(0x77);
+    Wire.beginTransmission(base);
     Wire.write(0xF8);
     Wire.endTransmission(false);
     Wire.requestFrom(0x77, 1, false);
