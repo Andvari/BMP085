@@ -43,21 +43,8 @@ class BMP085{
 public:
 	BMP085(void);
 
-	void	begin(void);
-	void	begin(uint8_t);						// oss
-	void	begin(uint8_t, int8_t);			// oss, eoc
-	void	begin(uint8_t, int8_t, int8_t);	// oss, eoc, xclr
-
-	void	setMode(uint8_t, uint8_t);
-
-	void	setBaseAddress(uint8_t);
-	void	setPinXCLR(int8_t);
-	void	setPinEOC(int8_t);
-	int8_t	getPinXCLR(void);
-	int8_t	getPinEOC(void);
-
+	void begin(uint8_t, int8_t, int8_t);			// oss, eoc, xclr
 	void	reset(void);
-
 	int32_t	getTemperature(void);
 	int32_t	getPressure(void);
 

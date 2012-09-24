@@ -11,105 +11,47 @@
 BMP085 :: BMP085(void){
 }
 
-void BMP085 :: begin(void){
+void BMP085 :: begin(uint8_t new_oss, int8_t new_pin_eoc, int8_t new_pin_xclr){
+	int8_t dl[4] = {5, 8, 14, 26};
 
 	Wire.begin();
-	setBaseAddress(BMP085_BASE_ADDRESS);
 
-	getReg(&AC1, AC1_ADDR);
-	getReg(&AC2, AC2_ADDR);
-	getReg(&AC3, AC3_ADDR);
+	getReg(&AC1,			AC1_ADDR);
+	getReg(&AC2,			AC2_ADDR);
+	getReg(&AC3,			AC3_ADDR);
 	getReg((int16_t *)&AC4, AC4_ADDR);
 	getReg((int16_t *)&AC5, AC5_ADDR);
 	getReg((int16_t *)&AC6, AC6_ADDR);
-	getReg(&B1_, B1_ADDR);
-	getReg(&B2_, B2_ADDR);
-	getReg(&MB, MB_ADDR);
-	getReg(&MC, MC_ADDR);
-	getReg(&MD, MD_ADDR);
+	getReg(&B1_,			B1_ADDR);
+	getReg(&B2_,			B2_ADDR);
+	getReg(&MB,				MB_ADDR);
+	getReg(&MC,				MC_ADDR);
+	getReg(&MD,				MD_ADDR);
 
-	setMode(STANDARD, STANDARD_CONVERSION_DELAY);
-	setPinXCLR(-1);
-	setPinEOC(-1);
-}
-
-void BMP085 :: begin(uint8_t new_oss){
-
-	this->begin();
-
-	switch(new_oss){
-		case	ULTRA_LOW_POWER:		setMode(ULTRA_LOW_POWER,		ULTRA_LOW_POWER_CONVERSION_DELAY);			break;
-	  	case	STANDARD:				setMode(STANDARD,				STANDARD_CONVERSION_DELAY);					break;
-	  	case	HIGH_RESOLUTION:		setMode(HIGH_RESOLUTION,		HIGH_RESOLUTION_CONVERSION_DELAY);			break;
-	  	case	ULTRA_HIGH_RESOLUTION:	setMode(ULTRA_HIGH_RESOLUTION,	ULTRA_HIGH_RESOLUTION_CONVERSION_DELAY);	break;
-	}
-	setPinXCLR(-1);
-	setPinEOC(-1);
-}
-
-void BMP085 :: begin(uint8_t new_oss, int8_t new_pin_eoc){
-
-	this->begin();
-	switch(new_oss){
-		case	ULTRA_LOW_POWER:		setMode(ULTRA_LOW_POWER,		ULTRA_LOW_POWER_CONVERSION_DELAY);			break;
-	  	case	STANDARD:				setMode(STANDARD,				STANDARD_CONVERSION_DELAY);					break;
-	  	case	HIGH_RESOLUTION:		setMode(HIGH_RESOLUTION,		HIGH_RESOLUTION_CONVERSION_DELAY);			break;
-	  	case	ULTRA_HIGH_RESOLUTION:	setMode(ULTRA_HIGH_RESOLUTION,	ULTRA_HIGH_RESOLUTION_CONVERSION_DELAY);	break;
-	}
-	setPinXCLR(-1);
-	setPinEOC(new_pin_eoc);
-	pinMode(pin_eoc, INPUT);
-}
-
-void BMP085 :: begin(uint8_t new_oss, int8_t new_pin_eoc, int8_t new_pin_xclr){
-
-	this->begin();
-	switch(new_oss){
-		case	ULTRA_LOW_POWER:		setMode(ULTRA_LOW_POWER,		ULTRA_LOW_POWER_CONVERSION_DELAY);			break;
-	  	case	STANDARD:				setMode(STANDARD,				STANDARD_CONVERSION_DELAY);					break;
-	  	case	HIGH_RESOLUTION:		setMode(HIGH_RESOLUTION,		HIGH_RESOLUTION_CONVERSION_DELAY);			break;
-	  	case	ULTRA_HIGH_RESOLUTION:	setMode(ULTRA_HIGH_RESOLUTION,	ULTRA_HIGH_RESOLUTION_CONVERSION_DELAY);	break;
-	}
-	setPinXCLR(new_pin_xclr);
-	setPinEOC(new_pin_eoc);
-	pinMode(pin_xclr, OUTPUT);
-	pinMode(pin_eoc, INPUT);
-}
-
-void BMP085 :: setMode(uint8_t new_oss, uint8_t new_delay){
+	base				=	BMP085_BASE_ADDRESS;
 	oss					=	new_oss;
-	conversion_delay	=	new_delay;
-}
+	conversion_delay	=	dl[oss];
 
-void BMP085 :: setBaseAddress(uint8_t new_address){
-	base = new_address;
+	pin_eoc		=	-1;
+	if(new_pin_eoc != pin_eoc){
+		pin_eoc = new_pin_eoc;
+		pinMode(pin_eoc, INPUT);
+	}
+
+	pin_xclr	=	-1;
+	if(new_pin_xclr != pin_xclr){
+		pin_xclr = new_pin_xclr;
+		pinMode(pin_xclr, OUTPUT);
+	}
 }
 
 void BMP085 :: reset(void){
-	if( getPinXCLR() != NO_PIN_ASSIGNED){
+	if( pin_xclr != NO_PIN_ASSIGNED){
 		digitalWrite(pin_xclr, 0);
 		delay(1);
 		digitalWrite(pin_xclr, 1);
 	}
 }
-
-
-void BMP085 :: setPinXCLR(int8_t pin){
-	pin_xclr = pin;
-}
-
-void BMP085 :: setPinEOC(int8_t pin){
-	pin_eoc = pin;
-}
-
-int8_t BMP085 :: getPinEOC(void){
-	return pin_eoc;
-}
-
-int8_t BMP085 :: getPinXCLR(void){
-	return pin_xclr;
-}
-
 
 int32_t BMP085 :: getTemperature(void){
 	uint8_t MSB;
@@ -123,7 +65,7 @@ int32_t BMP085 :: getTemperature(void){
     Wire.write(0xF4);
     Wire.write(0x2E);
     Wire.endTransmission(false);
-    if(getPinEOC() == -1){
+    if(pin_eoc == -1){
     	delay(5);
     }
     else{
@@ -174,15 +116,14 @@ int32_t BMP085 :: getPressure(void){
     Wire.write(0xF4);
     Wire.write(0x34 + (oss << 6));
     Wire.endTransmission(false);
-    if(getPinEOC() == -1){
+    if(pin_eoc == -1){
         delay(conversion_delay);
     }
     else{
     	while(digitalRead(pin_eoc) == 0);
     }
 
-
-    Wire.beginTransmission(base);
+    Wire.beginTransmission(0x77);
     Wire.write(0xF6);
     Wire.endTransmission(false);
     Wire.requestFrom(0x77, 2, false);
@@ -190,7 +131,7 @@ int32_t BMP085 :: getPressure(void){
     LSB = Wire.read();
     Wire.endTransmission(true);
 
-    Wire.beginTransmission(base);
+    Wire.beginTransmission(0x77);
     Wire.write(0xF8);
     Wire.endTransmission(false);
     Wire.requestFrom(0x77, 1, false);
